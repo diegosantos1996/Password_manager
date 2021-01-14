@@ -3,21 +3,25 @@ from database import data_
 class checker():
 
     def __init__(self):
-        pass
+        self.answer = ''
+        self.x = data_()  # initializes x as data_(), acts as a connector the your database
 
     def ask(self):
         ask_ = 3
-        process = True
-        while ask_ != 0 and process:
+
+        while ask_ != 0:
             username = input('Please Enter username: ')
             password = input('Please Enter Password: ')
-            x = data_()  # initializes x as data_(), acts as a connector the your database
-            user_check = x.check()  # Uses check and puts it into variable for username/password matching
+
+            user_check = self.x.check()  # Uses check and puts it into variable for username/password matching
 
             if user_check.get(username) == password:
+                name_of_user = self.x.match(username)
+
                 print("Access Granted")
-                print("Greetings", )
-                process = False
+                print("Greetings, ", name_of_user[0][0], name_of_user[0][1] )  # Greets with firstname and lastname
+                self.answer = username   
+                return self.answer   # return statement to break the while loop if it enters a valid username
             else:
                 ask_ -= 1
                 print("Invalid Username / Password ")
@@ -30,9 +34,15 @@ class checker():
 
 
 
-
     def call(self):
-        pass
+        if len(self.answer) == 0:
+            return self.answer       #if self.answer is still '', breaks function
+
+        info = self.x.caller()
+        # z
+
+
+
 
     def store(self):
         pass
@@ -43,8 +53,9 @@ class checker():
 
 if __name__ == '__main__':
 
-    y = checker()
+    y = checker()              #
     y.ask()
+    y.call()
     # end = False
     # while end:
     #     y = checker()
