@@ -12,6 +12,8 @@ class data_():
     def __init__(self):
         self.mycursor = mydb.cursor()
         self.dict_users = {}
+        self.user_id = {}
+        self.id_number = 0
 
 
     '''
@@ -20,11 +22,33 @@ class data_():
     def check(self):
 
         self.mycursor.execute("USE passwords")    # Uses table
-        self.mycursor.execute("select username,password from users ") # selecting username & password info from users
+        self.mycursor.execute("select username,password,users_id from users ") # selecting username & password info from users
         result = self.mycursor.fetchall()
-        self.dict_users = {x[0]:x[1] for x in result}  # initializes Username and password into dictionary
+        self.dict_users = {x[0]: x[1] for x in result}  # username: password        || initializes Username and password into dictionary
+        self.user_id = {x[0]: x[2] for x in result}  # username : users_id
         return self.dict_users
 
-    def match(self):
 
-        self.mycursor.execut("select u.users_id, ui.info_id, ")
+
+    '''
+     Gives the Statistics of the user ( Name, Age, 
+    '''
+    def match(self,id):
+
+        self.id = id
+        self.id_number = self.user_id.get(self.id)
+        self.mycursor.execute(f'select first_name, last_name from user_info where info_id = "{self.id_number}"')
+        result = self.mycursor.fetchall()
+        return result
+
+
+    def caller(self):
+
+        self.mycursor.execute(f'select Entity, username, password from collection where collection_id = "{self.id_number}"')
+        result = self.mycursor.fetchall()
+        print('-----------Structure-----------------------')
+        print("Index# |  Entity  |   Username  |   Password")
+        print('-------------------------------------------')
+
+        for num, val in enumerate(result):
+            print(num, val[0],"  |  ", val[1], "   |   ", val[2])
