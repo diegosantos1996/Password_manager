@@ -48,7 +48,95 @@ class data_():
         result = self.mycursor.fetchall()
         print('-----------Structure-----------------------')
         print("Index# |  Entity  |   Username  |   Password")
-        print('-------------------------------------------')
+        print('-------------------------------------')
 
         for num, val in enumerate(result):
             print(num, val[0],"  |  ", val[1], "   |   ", val[2])
+        print('----------END---------')
+        print('----------------------')
+        print("What do you want do?")
+        print("Options: (A) Add / (E) Edit / (D) Delete / (L) Leave")
+        option_ask = True
+        while option_ask:
+            answer = input("Please input your answer: ")
+            if answer in "AEDL":
+                option_ask = False
+            else:
+                print("Please choose from the choices")
+                option_ask = True
+
+        if answer.upper() == "A":
+            answer = self.ask_mediator()
+            if answer.upper() == 'Y':
+                self.add()
+                self.caller()
+            else:
+                return 0
+
+
+
+
+
+
+    def ask_mediator(self):   # Will pass through all decision makers here inputing if Yes or No for all options
+        add_ask = True
+        while add_ask:
+            x = input("Do you want to continue? (Y) Yes/ (N) No? ")
+            if x.upper() in 'YN':
+                return x
+            else:
+                print("Invalid answer")
+                add_ask = True
+
+
+    def add(self):
+        '''
+        1. Add Website/app, username, password
+        2. Automatically inputs into the database
+        3. Gives you a recap before finalization
+        4. Asks what you to do, add again or exit out of the recursion back to caller function
+        '''
+        print(self.id_number, self.dict_users)
+        add_final = True
+        while add_final:
+
+            entity = input("Please enter website/app name: ")
+            username = input("Please input your username: ")
+            password = input("Pleas input your password: ")
+            print("--Recap---")
+            print(f"Website: {entity}")
+            print(f"Username: {username}")
+            print(f"password: {password}")
+            print("-----")
+            final_try = True
+            while final_try:
+                finalize = input("Do you want to finalize the add?: (Y) / (N): ")
+                if finalize.upper() in "YN":
+                    final_try = False
+                else:
+                    print("Please enter valid answer")
+                    final_try = True
+            if finalize.upper() == "Y":
+                self.mycursor.execute(f'insert into collection (collection_id, Entity, username, password) values ("{self.id_number}","{entity}","{username}","{password}")')  # Inserts your input into MySQL
+                mydb.commit() # Crucial!! This is necessary otherwise nothing will happen in your Database, always run this insert,delete etc.
+
+                print("Successfuly Added")
+
+                ask_again = True
+                while ask_again:
+                    answer_1 = input('Do you want to add another?: (Y) Yes / (N) No ')
+                    if answer_1 in "YN":
+                        ask_again = False
+                    else:
+                        print("Please input correct Yes or No")
+                        asK_again = True
+            if answer_1.upper() == 'Y':
+                print('Okay understood.')
+                add_final = True
+            else:
+                print('Okay, understood. Going Back to options. ')
+                add_final = False
+
+
+
+
