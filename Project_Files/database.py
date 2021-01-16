@@ -8,7 +8,14 @@ mydb = mysql.connector.connect(
 )
 
 
-class data_():
+class data_():        
+    '''
+    1. Initializes mycursor so you can call it on every function
+    2. dict_users = {} shows you all available users 
+    3. user_id = {] used to join User_id and collection_id
+    4. id_number = basis for join
+    
+    '''
     def __init__(self):
         self.mycursor = mydb.cursor()
         self.dict_users = {}
@@ -40,16 +47,27 @@ class data_():
         self.mycursor.execute(f'select first_name, last_name from user_info where info_id = "{self.id_number}"')
         result = self.mycursor.fetchall()
         return result
-
+    
+    
+    '''
+    1. Main Bulk of the program
+    2. Recursively calls caller to initiate different options until you want to exit
+    3. Ability to call ADD, EDIT, DELETE function
+    4. Shows a dashboard of your collection.
+    '''
 
     def caller(self):
-
+        # TODO = Password Hashing
+        
         self.mycursor.execute(f'select Entity, username, password from collection where collection_id = "{self.id_number}"')
         result = self.mycursor.fetchall()
         print('-----------Structure-----------------------')
         print("Index# |  Entity  |   Username  |   Password")
         print('-------------------------------------')
 
+        result_list = [x for x in result]
+        print(result_list)
+        print(len(result_list))
         for num, val in enumerate(result):
             print(num, val[0],"  |  ", val[1], "   |   ", val[2])
         print('----------END---------')
@@ -65,13 +83,47 @@ class data_():
                 print("Please choose from the choices")
                 option_ask = True
 
-        if answer.upper() == "A":
+        if answer.upper() == "A":             # Process for adding
             answer = self.ask_mediator()
             if answer.upper() == 'Y':
                 self.add()
                 self.caller()
             else:
                 return 0
+        elif answer.upper() == "D":           # Process for deleting
+            answer = self.ask_mediator()
+            if answer.upper() == 'Y':
+                delete_ask = True
+                while delete_ask:
+                    print("Please input Index # of the row you want to delete, starts at 0")  # IN stands for index number
+                    IN = int(input('If you want to exit, type "-1" if you want to exit.:  '))
+
+                    if IN >= 0 and IN < len(result_list):
+                        self.delete_(result_list[IN][0], result_list[IN][1], result_list[IN][2])
+                        self.caller()
+                        delete_ask = False
+                    elif IN == -1:
+                        exit_ask = True
+                        while exit_ask:
+                            EA_answer = input('Are you sure you want to exit?: (Y) Yes / (N) No')
+                            if EA_answer in "YN":
+                                if EA_answer.upper() == 'Y':
+                                    print("Understood, returning to dashboard")
+                                    exit_ask = False
+                                    delete_ask = False
+                                    self.caller()
+                                elif EA_answer.upper() == "N":
+                                    print('Okay, returning delete process')
+                                    exit_ask = False
+                                    delete_ask = False
+                                else:
+                                    print("Invalid Answer: (Y) Yes / (N) No")
+                                    exit_ask = True
+                    else:
+                        print("Please input number in valid range and make sure it is a digit")
+                        print('If you want to exit, please type the letter "E" ')
+                        delete_ask = True
+
 
 
 
@@ -137,6 +189,42 @@ class data_():
                 print('Okay, understood. Going Back to options. ')
                 add_final = False
 
+    def delete_(self,entity_delete,username_delete,password_delete):
+        '''
+        1. Inputs Website, Username, password from result_list by getting the index_number and partition them by indexing the tupple
+        2. Presents you a verification of the info that you want to delete.
+        3. Has the functionality to exit if you don't want to delete anything
+        4. Verification upon deleting row.
+        5. Connects to your mysql, and automatically deletes the row for you.
+        
+        ++ Take note: TODO = Adds a multi-select delete ( delete multiple selected rows): 
+        '''
+        print("-----Deleting-----")
+        print("Website/App: ", entity_delete)
+        print("  Username : ", username_delete)
+        print("  Password : ", password_delete)
+        print("-----Deleting-----")
+        delete_ask = True
+
+        while delete_ask:
+            DA = input("Are you sure you want to delete the row?: ")
+            if DA in 'YN':
+                if DA == 'Y':
+                    self.mycursor.execute(f'delete from collection where Entity = "{entity_delete}" and username = "{username_delete}" and password = "{password_delete}"') # Deletes the row with the info above
+                    mydb.commit()  
+                    print('----Row Deleted----')
+                    print('-------------------')
+                    print('Going back to dashboard ')
+                    print('-------------------')
+                    print('-------------------')
+                    delete_ask = False
+                if DA == 'N':
+                    return 0
+            else:
+                print('Not valid answer: (Y) Yes / (N) ')
+                print('Please Try Again')
+                print("----------------")
+                delete_ask = True
 
 
 
