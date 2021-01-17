@@ -1,4 +1,6 @@
 import mysql.connector
+from time import sleep  # For Delays
+import os               # Find alternative for clear screen
 
 # Replace with your own
 mydb = mysql.connector.connect(
@@ -8,13 +10,13 @@ mydb = mysql.connector.connect(
 )
 
 
-class data_():        
+class data_():
     '''
     1. Initializes mycursor so you can call it on every function
-    2. dict_users = {} shows you all available users 
+    2. dict_users = {} shows you all available users
     3. user_id = {] used to join User_id and collection_id
     4. id_number = basis for join
-    
+
     '''
     def __init__(self):
         self.mycursor = mydb.cursor()
@@ -38,7 +40,7 @@ class data_():
 
 
     '''
-     Gives the Statistics of the user ( Name, Age, 
+     Gives the Statistics of the user ( Name, Age,)
     '''
     def match(self,id):
 
@@ -47,8 +49,8 @@ class data_():
         self.mycursor.execute(f'select first_name, last_name from user_info where info_id = "{self.id_number}"')
         result = self.mycursor.fetchall()
         return result
-    
-    
+
+
     '''
     1. Main Bulk of the program
     2. Recursively calls caller to initiate different options until you want to exit
@@ -58,7 +60,7 @@ class data_():
 
     def caller(self):
         # TODO = Password Hashing
-        
+
         self.mycursor.execute(f'select Entity, username, password from collection where collection_id = "{self.id_number}"')
         result = self.mycursor.fetchall()
         print('-----------Structure-----------------------')
@@ -89,6 +91,9 @@ class data_():
                 self.add()
                 self.caller()
             else:
+                # Todo: Add Delay, and clear list
+                print('Okay, Going back...')
+                self.caller()
                 return 0
         elif answer.upper() == "D":           # Process for deleting
             answer = self.ask_mediator()
@@ -103,29 +108,52 @@ class data_():
                         self.caller()
                         delete_ask = False
                     elif IN == -1:
-                        exit_ask = True
-                        while exit_ask:
-                            EA_answer = input('Are you sure you want to exit?: (Y) Yes / (N) No')
-                            if EA_answer in "YN":
-                                if EA_answer.upper() == 'Y':
-                                    print("Understood, returning to dashboard")
-                                    exit_ask = False
-                                    delete_ask = False
-                                    self.caller()
-                                elif EA_answer.upper() == "N":
-                                    print('Okay, returning delete process')
-                                    exit_ask = False
-                                    delete_ask = False
-                                else:
-                                    print("Invalid Answer: (Y) Yes / (N) No")
-                                    exit_ask = True
+                        ask_ = self.ask_mediator()
+                        if ask_.upper() == 'Y':
+                            print('Understood, returning to dashboard')
+                            delete_ask = False
+                            self.caller()
+                        elif ask_.upper() == 'N':
+                            print('Okay, returning delete process')
+                            delete_ask = False
                     else:
                         print("Please input number in valid range and make sure it is a digit")
                         print('If you want to exit, please type the letter "E" ')
                         delete_ask = True
+            elif answer.upper() == 'N':
+                # Todo: add time.sleep() and clear list
+                print('Okay, undestood. Going back')
+                sleep(2)
+                # os.system('cls') # Todo: system clear not working look for alternatives.
+                print('Clearing list')
+                sleep(2)
+                self.caller()
+        elif answer.upper() == "E":  # for editing password, assuming that you are only changing the password
+            answer = self.ask_mediator()
+            if answer.upper() == 'Y':
+                print("Please input Index # of the row you want to edit, starts at 0")  # IN stands for index number
+                IN = int(input('If you want to exit, type "-1" if you want to exit.:  '))
+
+                if IN >= 0 and IN < len(result_list):
+                    self.edit(result_list[IN][0], result_list[IN][1], result_list[IN][2])    # Only taking it entity and username for row matching in MySQL, get password for previous password checking
+                    self.caller()
+            else:
+                print('Okay, Going back...')
+                sleep(2)
+                self.caller()
+                return 0
+        elif answer.upper() == "L":
+            answer = self.ask_mediator()
+            if answer.upper() == 'Y':
+                print('Understood, Good bye.')
+                return 0
+            else:
+                print('Okay, going back to options: ')
+                self.caller()
 
 
-
+    # def cls(self):
+    #     os.system('cls' if os.name=='nt' else 'clear')  # Look for alternatives
 
 
 
@@ -139,6 +167,7 @@ class data_():
             else:
                 print("Invalid answer")
                 add_ask = True
+
 
 
     def add(self):
@@ -196,8 +225,8 @@ class data_():
         3. Has the functionality to exit if you don't want to delete anything
         4. Verification upon deleting row.
         5. Connects to your mysql, and automatically deletes the row for you.
-        
-        ++ Take note: TODO = Adds a multi-select delete ( delete multiple selected rows): 
+
+        ++ Take note: TODO = Adds a multi-select delete ( delete multiple selected rows):
         '''
         print("-----Deleting-----")
         print("Website/App: ", entity_delete)
@@ -207,24 +236,56 @@ class data_():
         delete_ask = True
 
         while delete_ask:
-            DA = input("Are you sure you want to delete the row?: ")
-            if DA in 'YN':
-                if DA == 'Y':
-                    self.mycursor.execute(f'delete from collection where Entity = "{entity_delete}" and username = "{username_delete}" and password = "{password_delete}"') # Deletes the row with the info above
-                    mydb.commit()  
-                    print('----Row Deleted----')
-                    print('-------------------')
-                    print('Going back to dashboard ')
-                    print('-------------------')
-                    print('-------------------')
-                    delete_ask = False
-                if DA == 'N':
-                    return 0
+            print("Once delete process has been completed, you can't change it back.")
+            x = self.ask_mediator()
+            if x == 'Y':
+                self.mycursor.execute(f'delete from collection where Entity = "{entity_delete}" and username = "{username_delete}" and password = "{password_delete}"') # Deletes the row with the info above
+                mydb.commit()
+                print('----Row Deleted----')
+                print('-------------------')
+                print('Going back to dashboard ')
+                print('-------------------')
+                print('-------------------')
+                delete_ask = False
+            if x == 'N':
+                sleep(1)
+                print('Okay, returning')
+                self.cls()
+                return 0
+
+
+
+    def edit(self,entity,username,password):
+        '''
+        1. Allow updating password
+        2. Verify before going through
+        3. Goes back to caller() after
+        '''
+        sleep(1)
+        print('----Current-----')
+        print('  Website/ App    : ', entity)
+        print('   Username       : ', username)
+        print('Previous Password : ', password)
+        sleep(2)
+        edit_ask = self.ask_mediator()
+        if edit_ask == 'Y':
+            update_password = input('Please input password you want to change: ')
+            sleep(1)
+            print('Preview')
+            print('  Website/ App  : ', entity)
+            print('   Username     : ', username)
+            print('Updated Password: ', update_password)
+            sleep(2)
+            final_ask = self.ask_mediator()
+            if final_ask == 'Y':
+                self.mycursor.execute(f'update collection set password = "{update_password}" where Entity = "{entity}" and username = "{username}"')
+                mydb.commit()
             else:
-                print('Not valid answer: (Y) Yes / (N) ')
-                print('Please Try Again')
-                print("----------------")
-                delete_ask = True
+                print('Going back to start, edit')
+                sleep(1)
+                self.edit()
+        else:
+            return 0
 
 
 
